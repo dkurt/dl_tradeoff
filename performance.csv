@@ -1,0 +1,19 @@
+model,performance (ralative)
+faster_rcnn_inception_v2_coco,0.08369096853483038
+faster_rcnn_resnet101_coco,0.017544706168835807
+faster_rcnn_resnet50_coco,0.022291860297602502
+faster_rcnn_resnet50_lowproposals_coco,0.059228738077972375
+ssd_mobilenet_v1_coco,0.9069871556256932
+ssd_mobilenet_v1_fpn_coco,0.036875978513907164
+ssd_mobilenet_v2_coco,0.5991207462663682
+ssdlite_mobilenet_v2,0.807614885859788
+ssd300,0.1000879877453004
+ssd512,0.030226133789711108
+dssd,0.011243581212983448
+inceptionv2_ssd,0.3905791780123675
+mobilenet-ssd,1.0
+mobilenet-ssd-500x500,0.5056834262083243
+faster_rcnn_nas_lowproposals_coco,0.0
+rfcn_resnet_101_coco,0.02909598893868345
+yolo-v3,0.0878507002939191
+yolo-tiny-v3,0.9328625002847886
