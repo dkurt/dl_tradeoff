@@ -32,6 +32,24 @@ def evaluate(model, dataset, annotations, datasetName, classes):
     t = getattr(__import__('topologies'), topology.name.replace('-', '_').replace('.', '_'))()
     net = t.getOCVModel()  # Get OpenCV model instance (has postprocessing inside).
 
+    # Looks like a bug in OpenVINO:
+    # "Cannot parse parameter negative_slope from IR for ReLU."
+    # "Value 0,000000 cannot be casted to float"
+    if net.getLayer(0).outputNameToIndex('image_info') != -1:
+        xmlPath, _ = t.getIR()
+
+        with open(xmlPath, 'rt') as f:
+            data = f.read()
+        data = data.replace('type="ReLU">', 'type="ReLU"><data negative_slope="0"/>')
+        with open(xmlPath, 'wt') as f:
+            f.write(data)
+
+        net = t.getOCVModel()
+
+    # NMS for YOLOv3
+    nmsThreshold = 0.4 if len(net.getUnconnectedOutLayers()) > 1 else 0.0
+    confThreshold = 0.01
+
     detections = []
     images = os.listdir(dataset)
     for i, imgName in enumerate(images):
@@ -42,8 +60,35 @@ def evaluate(model, dataset, annotations, datasetName, classes):
             print("Unable to read image: " + imgName)
             continue
 
-        nmsThreshold = 0.4 if len(net.getUnconnectedOutLayers()) > 1 else 0.0
-        classIds, confidences, boxes = net.detect(img, confThreshold=0.01, nmsThreshold=nmsThreshold)
+        # TODO: fix Faster R-CNN with swapped inputs
+        if net.getLayer(0).outputNameToIndex('image_info') != -1:
+            tensor_id = net.getLayer(0).outputNameToIndex('image_tensor')
+            assert(tensor_id != -1)
+
+            _, input_shapes, _  = net.getLayersShapes(netInputShape=None)
+            inpH, inpW = int(input_shapes[0][1][2]), int(input_shapes[0][1][3])
+
+            net.setInput(np.array([[inpH, inpW, 1.0]], dtype=np.float32), 'image_info')
+            net.setInput(cv.dnn.blobFromImage(img, size=(inpW, inpH)), 'image_tensor')
+            out = net.forward().reshape(-1, 7)
+
+            classIds = []
+            confidences = []
+            boxes = []
+            for detection in out:
+                confidence = float(detection[2])
+                if confidence < confThreshold:
+                    continue
+                classIds.append(int(detection[1]))
+                confidences.append(confidence)
+                x = int(detection[3] * img.shape[1])
+                y = int(detection[4] * img.shape[0])
+                w = int(detection[5] * img.shape[1]) - x + 1
+                h = int(detection[6] * img.shape[0]) - y + 1
+                boxes.append([x, y, w, h])
+        else:
+            classIds, confidences, boxes = net.detect(img, confThreshold=confThreshold,
+                                                      nmsThreshold=nmsThreshold)
 
         for classId, score, box in zip(classIds, confidences, boxes):
             classId = int(classId)
