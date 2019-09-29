@@ -1,0 +1,20 @@
+description: >-
+  YOLOv3 object detection model
+task_type: detection
+files:
+  - name: yolov3.cfg
+    size: 8342
+    sha256: 22489ea38575dfa36c67a90048e8759576416a79d32dc11e15d2217777b9a953
+    source: https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg
+  - name: yolov3.weights
+    size: 248007048
+    sha256: 523e4e69e1d015393a1b0a441cef1d9c7659e3eb2d7e15f793f060a21b32f297
+    source: https://pjreddie.com/media/files/yolov3.weights
+model_optimizer_args:
+  - --input_shape=[1,3,416,416]
+  - --scale_values=[255]
+  - --reverse_input_channels
+  - --input_model=$dl_dir/yolov3.weights
+  - --input_proto=$dl_dir/yolov3.cfg
+framework: caffe  # To prevent error. Actual framework is Darknet
+license: https://github.com/pjreddie/darknet/blob/master/LICENSE

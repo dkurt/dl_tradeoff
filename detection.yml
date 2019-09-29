@@ -22,8 +22,8 @@ topologies:
   - name: "mobilenet-ssd"
     dataset: "VOC"
 
-  - name: "faster_rcnn_inception_resnet_v2_atrous_coco"
-    dataset: "COCO"
+  # - name: "faster_rcnn_inception_resnet_v2_atrous_coco"
+  #   dataset: "COCO"
 
   - name: "faster_rcnn_inception_v2_coco"
     dataset: "COCO"
@@ -34,8 +34,10 @@ topologies:
   - name: "faster_rcnn_resnet50_coco"
     dataset: "COCO"
 
-  # - name: "yolo-v3"
-  #   dataset: "COCO_80"
-  #
-  # - name: "yolo-tiny-v3"
-  #   dataset: "COCO_80"
+  - name: "yolo-v3"
+    dataset: "COCO_80"
+    use_ir: false
+
+  - name: "yolo-v3-tiny"
+    dataset: "COCO_80"
+    use_ir: false
