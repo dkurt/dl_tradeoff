@@ -1,0 +1,15 @@
+%YAML:1.0
+
+topologies:
+  - name: "face-detection-adas-0001"
+    dataset: "background,face"
+
+  - name: "face-detection-retail-0004"
+    dataset: "background,face"
+
+  - name: "face-detection-retail-0005"
+    dataset: "background,face"
+
+  - name: "opencv-face-detection"
+    dataset: "background,face"
+    use_ir: False
