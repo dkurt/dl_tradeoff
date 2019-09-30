@@ -1,0 +1,5 @@
+model,performance (ralative)
+face-detection-retail-0004,0.9438713673947589
+face-detection-retail-0005,1.0
+face-detection-adas-0001,0.0
+opencv-face-detection,0.21018610789409897

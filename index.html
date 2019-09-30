@@ -23,7 +23,10 @@
     let perf = {}, data, header;
 
     function init() {
-      $.get('performance.csv', function(perfData) {
+      let tasksSelect = document.getElementById("tasks");
+      let taskName = tasksSelect.options[tasksSelect.selectedIndex].value;
+
+      $.get('data/' + taskName + '_performance.csv', function(perfData) {
         perfData = perfData.split('\n');
         if (perfData[perfData.length - 1] == '')
             perfData.pop()
@@ -31,13 +34,14 @@
           var line = perfData[i].split(',');
           perf[line[0]] = Number(line[1]);
         }
-        $.get('accuracy.csv', function(accData) {
+        $.get('data/' + taskName + '_accuracy.csv', function(accData) {
           data = accData.split('\n');
           if (data[data.length - 1] == '')
               data.pop()
           header = data[0].split(',');
 
           var classes = document.getElementById("classes");
+          classes.innerHTML = '';
           for (var i = 1; i < header.length; ++i) {
             classes.innerHTML += '<option value="' + header[i] + '">' + header[i] + '</option>'
           }
@@ -49,19 +53,27 @@
     function main() {
       Plotly.purge('tester');
 
+      let tasksSelect = document.getElementById("tasks");
+      let taskName = tasksSelect.options[tasksSelect.selectedIndex].value;
+
       let classesSelect = document.getElementById("classes");
       let className = classesSelect.options[classesSelect.selectedIndex].value;
       let classId = header.indexOf(className);
       let xs = [];
       let ys = [];
+      let datasetName = '';
+      if (taskName == 'coco')
+          datasetName = 'COCO 2017'
+      else if (taskName == 'fddb')
+          datasetName = 'FDDB'
 
       let layout = {
         title: {
-          text: 'Deep learning tradeoff: accuracy against efficiency (object detection)',
+          text: 'Deep learning tradeoff: accuracy against efficiency',
         },
         xaxis: {
           title: {
-            text: 'Average Precision @ IoU=0.50:0.95 (class "' + className + '") on COCO 2017 validation dataset'
+            text: 'Average Precision @ IoU=0.50:0.95 (class "' + className + '") on ' + datasetName + ' validation dataset'
           }
         },
         yaxis: {
@@ -100,6 +112,12 @@
 </head>
 
 <body onload="init()">
+  Task:
+  <select id="tasks" onchange="init()">
+      <option value="coco">COCO object detection</option>
+      <option value="fddb">FDDB face detection</option>
+  </select>
+
   Class to show: <select id="classes" onchange="main()"></select>
 
   <div id="tester" style="width: 100%;height: 100%"></div>
