@@ -1,0 +1,25 @@
+model,top-1 accuracy
+alexnet,0.55814
+caffenet,0.56008
+densenet-121-tf,0.72476
+densenet-169-tf,0.74338
+densenet-169,0.74782
+densenet-201,0.7564
+googlenet-v1,0.68016
+mobilenet-v2,0.69772
+octave-densenet-121-0.125,0.7448
+octave-resnet-101-0.125,0.7816
+octave-resnet-26-0.25,0.74158
+octave-se-resnet-50-0.125,0.7727
+resnet-101,0.72256
+resnet-50-int8-sparse-v1-tf-0001,0.72008
+resnet-50-int8-sparse-v2-tf-0001,0.72034
+resnet-50-int8-tf-0001,0.69818
+resnet-50,0.70598
+squeezenet1.0,0.57086
+squeezenet1.1,0.57284
+densenet-121,0.73204
+densenet-161-tf,0.75828
+octave-resnext-101-0.25,0.78444
+octave-resnext-50-0.25,0.7746
+vgg16,0.6579

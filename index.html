@@ -61,11 +61,13 @@
       let classId = header.indexOf(className);
       let xs = [];
       let ys = [];
-      let datasetName = '';
+      let xtitle = '';
       if (taskName == 'coco')
-          datasetName = 'COCO 2017'
+          xtitle = 'Average Precision @ IoU=0.50:0.95 (class "' + className + '") on COCO 2017 validation dataset'
       else if (taskName == 'fddb')
-          datasetName = 'FDDB'
+          xtitle = 'Average Precision @ IoU=0.50:0.95 (class "' + className + '") on FDDB validation dataset'
+      else if (taskName == 'imagenet')
+          xtitle = 'Image classification accuracy (%) on ImageNet validation dataset (ILSVRC2012)'
 
       let layout = {
         title: {
@@ -73,7 +75,7 @@
         },
         xaxis: {
           title: {
-            text: 'Average Precision @ IoU=0.50:0.95 (class "' + className + '") on ' + datasetName + ' validation dataset'
+            text: xtitle
           }
         },
         yaxis: {
@@ -116,6 +118,7 @@
   <select id="tasks" onchange="init()">
       <option value="coco">COCO object detection</option>
       <option value="fddb">FDDB face detection</option>
+      <option value="imagenet">ImageNet image classification</option>
   </select>
 
   Class to show: <select id="classes" onchange="main()"></select>
