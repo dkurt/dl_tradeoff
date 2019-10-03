@@ -42,7 +42,7 @@
 
           var classes = document.getElementById("classes");
           classes.innerHTML = '';
-          for (var i = 1; i < header.length; ++i) {
+          for (var i = 2; i < header.length; ++i) {
             classes.innerHTML += '<option value="' + header[i] + '">' + header[i] + '</option>'
           }
           main();
@@ -85,16 +85,32 @@
           showticklabels: false
         },
       }
+      let minScatterSize = 20;
+      let maxScatterSize = 80;
+      let minModelSize = Number(data[1].split(',')[1])
+      let maxModelSize = minModelSize;
+      for (var i = 2; i < data.length; ++i) {
+        let size = Number(data[i].split(',')[1]);
+        minModelSize = Math.min(minModelSize, size);
+        maxModelSize = Math.max(size, maxModelSize);
+      }
+      function norm(modelSize) {
+        p = (modelSize - minModelSize) / (maxModelSize - minModelSize);
+        p = Math.sqrt(p);
+        return p * (maxScatterSize - minScatterSize) + minScatterSize;
+      }
+
       for (var i = 1; i < data.length; ++i) {
         let entry = data[i].split(',');
         let name = entry[0];
+        let modelSize = entry[1];
         let pltData = [{
           x: [Number(entry[classId])],
           y: [perf[name]],
           type: 'scatter',
           mode: 'markers+text',
           marker: {
-            size: 20,
+            size: norm(modelSize),
             line: {
               color: 'rgb(0, 0, 0)',
               width: 1

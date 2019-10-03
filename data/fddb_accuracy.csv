@@ -1,5 +1,5 @@
-model,face
-face-detection-adas-0001,0.38910250204327657
-face-detection-retail-0004,0.3931379352006019
-face-detection-retail-0005,0.42160880480122115
-opencv-face-detection,0.4281232868605109
+model,weights size (bytes),face
+face-detection-adas-0001,4211988,0.38910250204327657
+face-detection-retail-0004,2352892,0.3931379352006019
+face-detection-retail-0005,4083044,0.42160880480122115
+opencv-face-detection,10666211,0.4281232868605109

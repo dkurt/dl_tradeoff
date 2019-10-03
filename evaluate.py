@@ -14,8 +14,7 @@ from pycocotools.cocoeval import COCOeval
 
 from datasets import *
 
-
-def evaluate(model, imagesDir, annotations, datasetName, classes, useIR, perfTest):
+def getModel(model, useIR):
     net = None
     # We do fake script location to nagivate to extra models from this repo
     fake_loc = os.path.join(os.path.dirname(__file__), 'extra', 'models', 'yolo-v3', 'model.yml')
@@ -26,6 +25,16 @@ def evaluate(model, imagesDir, annotations, datasetName, classes, useIR, perfTes
                 # Dynamically import model class.
                 t = getattr(__import__('topologies'), model.replace('-', '_').replace('.', '_'))()
                 net = t.getOCVModel(useIR)  # Get OpenCV model instance (has postprocessing inside).
+
+                if os.path.exists(t.model):
+                    modelSize = os.path.getsize(t.model)
+                elif useIR:
+                    xmlPath, binPath - t.getIR()
+                    modelSize = os.path.getsize(binPath)
+                else:
+                    print('Unable to determine model size')
+                    sys.exit(1)
+
                 sys.modules.pop('topologies')
                 break
         if net:
@@ -35,6 +44,12 @@ def evaluate(model, imagesDir, annotations, datasetName, classes, useIR, perfTes
         print('Topology ' + model + ' not found!')
         sys.exit(1)
 
+    print(entry.name, modelSize)
+    return modelSize, net
+
+
+def evaluate(model, imagesDir, annotations, datasetName, classes, useIR, perfTest):
+    modelSize, net = getModel(model, useIR)
 
     if net.getLayer(0).outputNameToIndex('image_info') != -1:
         _, input_shapes, _  = net.getLayersShapes(netInputShape=None)
@@ -119,7 +134,7 @@ def evaluate(model, imagesDir, annotations, datasetName, classes, useIR, perfTes
         # cv.waitKey()
 
     if perfTest:
-        return np.median(detections[1:])  # Exclude first run
+        return modelSize, np.median(detections[1:])  # Exclude first run
 
     resFile = 'results.json'
     with open(resFile, 'wt') as f:
@@ -142,7 +157,7 @@ def evaluate(model, imagesDir, annotations, datasetName, classes, useIR, perfTes
         cocoEval.summarize()
         print()
         metrics[className] = cocoEval.stats[0]
-    return metrics
+    return modelSize, metrics
 
 
 if __name__ == '__main__':
@@ -168,7 +183,8 @@ if __name__ == '__main__':
     if args.output:
         with open(args.output, 'wt') as f:
             writer = csv.writer(f)
-            writer.writerow(['model'] + ['performance (ralative)'] if args.perf else args.classes)
+            writer.writerow(['model'] +
+                            (['performance (ralative)'] if args.perf else ['weights size (bytes)'] + args.classes))
 
     if args.dataset == 'COCO':
         datasetManager = COCODataset()
@@ -188,14 +204,14 @@ if __name__ == '__main__':
         useIR = not useIR or useIR.lower() == 'true'
 
         if not args.model or name == args.model:
-            metrics = evaluate(name, args.images, annotations, datasetName,
-                               args.classes, useIR, args.perf)
+            modelSize, metrics = evaluate(name, args.images, annotations, datasetName,
+                                          args.classes, useIR, args.perf)
             if args.perf:
                 performance[name] = metrics
             elif args.output:
                 with open(args.output, 'at') as f:
                     writer = csv.writer(f)
-                    writer.writerow([name] + [metrics[s] for s in args.classes])
+                    writer.writerow([name, modelSize] + [metrics[s] for s in args.classes])
 
     if args.perf:
         if args.output:
