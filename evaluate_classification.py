@@ -16,26 +16,10 @@ import time
 
 import cv2 as cv
 
+from evaluate import getModel
 
 def evaluate(model, imagesDir, useIR, perfTest):
-    net = None
-    # We do fake script location to nagivate to extra models from this repo
-    fake_loc = os.path.join(os.path.dirname(__file__), 'extra', 'models', 'yolo-v3', 'model.yml')
-    for path in [fake_loc, common.__file__]:
-        common.__file__ = path
-        for entry in common.load_models(argparse.Namespace(config=None)):
-            if entry.name == model:
-                # Dynamically import model class.
-                t = getattr(__import__('topologies'), model.replace('-', '_').replace('.', '_'))()
-                net = t.getOCVModel(useIR)  # Get OpenCV model instance (has postprocessing inside).
-                sys.modules.pop('topologies')
-                break
-        if net:
-            break
-
-    if not net:
-        print('Topology ' + model + ' not found!')
-        sys.exit(1)
+    modelSize, net = getModel(model, useIR)
 
     with open(os.path.join(imagesDir, 'val.txt'), 'rt') as f:
         data = [line.split(' ') for line in f.read().strip('\n').split('\n')]
@@ -67,9 +51,9 @@ def evaluate(model, imagesDir, useIR, perfTest):
             accuracy += classId == label
 
     if perfTest:
-        return np.median(times[1:])  # Exclude first run
+        return modelSize, np.median(times[1:])  # Exclude first run
     else:
-        return float(accuracy) / len(data)
+        return modelSize, float(accuracy) / len(data)
 
 
 if __name__ == '__main__':
@@ -89,7 +73,8 @@ if __name__ == '__main__':
     if args.output:
         with open(args.output, 'wt') as f:
             writer = csv.writer(f)
-            writer.writerow(['model'] + ['performance (ralative)'] if args.perf else ['top-1 accuracy'])
+            writer.writerow(['model'] +
+                            (['performance (ralative)'] if args.perf else ['weights size (bytes)', 'top-1 accuracy']))
 
     fs = cv.FileStorage(args.config, cv.FILE_STORAGE_READ)
     topologies = fs.getNode('topologies')
@@ -102,13 +87,13 @@ if __name__ == '__main__':
         useIR = not useIR or useIR.lower() == 'true'
 
         if not args.model or name == args.model:
-            metric = evaluate(name, args.images, useIR, args.perf)
+            modelSize, metric = evaluate(name, args.images, useIR, args.perf)
             if args.perf:
                 performance[name] = metric
             elif args.output:
                 with open(args.output, 'at') as f:
                     writer = csv.writer(f)
-                    writer.writerow([name, metric])
+                    writer.writerow([name, modelSize, metric])
 
     if args.perf:
         if args.output:
